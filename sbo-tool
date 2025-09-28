@@ -1,0 +1,156 @@
+#!/bin/bash
+
+LOCAL_DIR="/var/lib/sbo-tool"
+REPO_NAME="slackbuilds"
+REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
+REPO_DIR="$LOCAL_DIR/$REPO_NAME"
+
+check_dir() {
+	PKG_DIR=$(sniff "$REPO_DIR" -t d "$1")
+	if [ -z "$PKG_DIR" ]; then
+		echo "program $1 not found"
+		exit 1
+	fi
+}
+
+update_repo() {
+	if [ ! -d "$REPO_DIR/.git" ]; then
+		echo "Cloning repository, this may take a while..."
+		mkdir -p "$REPO_DIR"
+		git clone "$REPO_URL" "$REPO_DIR"
+		echo "Operation finished."
+	else
+		echo "Syncing slackbuilds repository..."
+		git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" pull
+		echo "Done."
+	fi
+}
+
+search_pkg() {
+	NAMES_MATCH=$(sniff "$REPO_DIR" -p -t d "$1")
+	if [ -z "$NAMES_MATCH" ]; then
+		echo "program $1 not found"
+	else
+		echo -e "Looking for $1 in slackbuilds local repository...\n"
+		echo -e "List of all packages with name matching \"$1\".\n"
+		for pkg_dir in $NAMES_MATCH; do
+			echo "$(basename "$pkg_dir")"
+		done
+	fi
+}
+
+build_pkg() {
+	check_dir "$1"
+	EXTS=".gz .xz zip .crate .bz2"
+	URLS=""
+	SRC=""
+	
+	#
+	#	Extract sources urls from info file
+	#
+	for ext in $EXTS; do
+		DOWNLOAD=$(grep "$ext" "$PKG_DIR/$1.info")
+		if [ ! -z "$DOWNLOAD" ]; then
+			URLS=$(echo "$DOWNLOAD" | sed -E 's/^DOWNLOAD[^=]*=//')
+			URLS=$(echo "$URLS" | tr -d '"' | tr -d '\\' | sed 's/^[[:space:]]*//')
+		fi
+	done
+
+	#
+	# Download source files
+	#
+	for url in $URLS; do
+		echo -e "\nDownloading source from url: $url in directory $PKG_DIR...\n"
+		if wget -P "$PKG_DIR" $url; then
+			echo -e "\nDownload completed successful\n"
+		else
+			echo -e "\nError: Failed to download source file\n"
+			exit 1
+		fi
+		file="$PKG_DIR/$(basename $url)"
+
+		if [ -z "$SRC" ]; then
+			SRC="$file"
+		else
+			SRC="$SRC $file"
+		fi
+	done
+
+	#
+	#	Extract hashes from info file
+	#
+	MD5SUM=$(grep -oE '[[:xdigit:]]{32}' "$PKG_DIR/$1.info")
+
+	#
+	#	Verify integrity of downloaded files
+	#
+}
+
+list_deps() {
+	check_dir "$1"
+
+	DEPS_LIST=$(grep "REQUIRE" "$PKG_DIR/$1.info" | cut -d '"' -f2)
+	if [ -z "$DEPS_LIST" ]; then
+		echo "No dependencies are required for $1"
+	else
+		echo -e "List of required dependencies for \"$1\"\n"
+		for dep in $DEPS_LIST; do
+			echo "$dep"
+		done
+	fi
+}
+
+show_info() {
+	check_dir "$1"
+	README=$(cat "$PKG_DIR/README" 2>/dev/null)
+	INFO=$(cat "$PKG_DIR/$1.info" 2>/dev/null)
+	SLACKBUILD=$(cat "$PKG_DIR/$1.SlackBuild" 2>/dev/null)
+
+	less <<EOF
++--------+
+| README |
++--------+
+
+$README
+
++------+
+| INFO |
++------+
+
+$INFO
+
++------------+
+| SLACKBUILD |
++------------+
+
+$SLACKBUILD
+
+EOF
+
+}
+
+usage() {
+	echo "Usage: $0 {sync|search|list-deps|info|build|install}"
+}
+
+case "$1" in
+	sync)
+		update_repo
+		;;
+	search)
+		search_pkg "$2"
+		;;
+	build)
+		build_pkg "$2"
+		;;
+	list-deps)
+		list_deps "$2"
+		;;
+	info)
+		show_info "$2"
+		;;
+	*)
+		usage
+		exit 1
+		;;
+esac
