@@ -59,7 +59,7 @@ build_pkg() {
 	check_dir "$1"
 	EXTS=".gz .xz zip .crate .bz2"
 	URLS=""
-	SRC=""
+	SRC=()
 	
 	# Extract source urls from the .info file
 	for ext in $EXTS; do
@@ -79,7 +79,12 @@ build_pkg() {
 			echo -e "\nError: Failed to download source file\n"
 			exit 1
 		fi
-		file="$PKG_DIR/$(basename $url)"
+		file="$PKG_DIR/$(basename "$url")"
+		SRC+=("$file")
+	done
+
+	# Extract MD5 hashes from the .info file
+	readarray -t MD5SUM < <(grep -oE '[[:xdigit:]]{32}' "$PKG_DIR/$1.info")
 
 		if [ -z "$SRC" ]; then
 			SRC="$file"
@@ -88,14 +93,6 @@ build_pkg() {
 		fi
 	done
 
-	#
-	#	Extract hashes from info file
-	#
-	MD5SUM=$(grep -oE '[[:xdigit:]]{32}' "$PKG_DIR/$1.info")
-
-	#
-	#	Verify integrity of downloaded files
-	#
 }
 
 list_deps() {
