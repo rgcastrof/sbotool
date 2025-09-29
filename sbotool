@@ -134,6 +134,16 @@ list_deps() {
 	fi
 }
 
+list_installed() {
+	INSTALLED=$(ls /var/log/packages | grep "SBo")
+
+	less <<EOF
+List of installed SBo packages:
+
+$INSTALLED
+EOF
+}
+
 show_info() {
 	check_dir "$1"
 	README=$(cat "$PKG_DIR/README" 2>/dev/null)
@@ -170,6 +180,7 @@ Usage: $0 <command> [package-name]
 Available commands:
 
 	sync			Clone or update the local slackbuilds repository.
+	list			List all installed packages
 	search <name>		Search for packages matching the given name.
 	build <name>		Download, verify, and build the specified package.
 	deps <name>		List all dependencies requeired by the specified package
@@ -189,6 +200,9 @@ case "$1" in
 		;;
 	deps)
 		list_deps "$2"
+		;;
+	list)
+		list_installed
 		;;
 	info)
 		show_info "$2"
