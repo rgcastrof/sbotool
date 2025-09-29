@@ -25,9 +25,11 @@ REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
 REPO_DIR="$LOCAL_DIR/$REPO_NAME"
 
 check_dir() {
-	PKG_DIR=$(sniff "$REPO_DIR" -t d "$1")
+	local pkg="$1"
+
+	PKG_DIR=$(sniff "$REPO_DIR" -t d "$pkg")
 	if [ -z "$PKG_DIR" ]; then
-		echo "Package $1 not found."
+		echo "Package $pkg not found."
 		exit 1
 	fi
 }
