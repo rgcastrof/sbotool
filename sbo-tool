@@ -8,7 +8,7 @@ REPO_DIR="$LOCAL_DIR/$REPO_NAME"
 check_dir() {
 	PKG_DIR=$(sniff "$REPO_DIR" -t d "$1")
 	if [ -z "$PKG_DIR" ]; then
-		echo "program $1 not found"
+		echo "Package $1 not found."
 		exit 1
 	fi
 }
@@ -29,9 +29,9 @@ update_repo() {
 search_pkg() {
 	NAMES_MATCH=$(sniff "$REPO_DIR" -p -t d "$1")
 	if [ -z "$NAMES_MATCH" ]; then
-		echo "program $1 not found"
+		echo "Package $1 not found"
 	else
-		echo -e "Looking for $1 in slackbuilds local repository...\n"
+		echo -e "Searching for $1 in the local SlackBuilds repository...\n"
 		echo -e "List of all packages with name matching \"$1\".\n"
 		for pkg_dir in $NAMES_MATCH; do
 			echo "$(basename "$pkg_dir")"
@@ -45,9 +45,7 @@ build_pkg() {
 	URLS=""
 	SRC=""
 	
-	#
-	#	Extract sources urls from info file
-	#
+	# Extract source urls from the .info file
 	for ext in $EXTS; do
 		DOWNLOAD=$(grep "$ext" "$PKG_DIR/$1.info")
 		if [ ! -z "$DOWNLOAD" ]; then
@@ -56,13 +54,11 @@ build_pkg() {
 		fi
 	done
 
-	#
 	# Download source files
-	#
 	for url in $URLS; do
-		echo -e "\nDownloading source from url: $url in directory $PKG_DIR...\n"
-		if wget -P "$PKG_DIR" $url; then
-			echo -e "\nDownload completed successful\n"
+		echo -e "\nDownloading source from: $url to directory: $PKG_DIR...\n"
+		if wget -P "$PKG_DIR" "$url"; then
+			echo -e "\nDownload completed successfully\n"
 		else
 			echo -e "\nError: Failed to download source file\n"
 			exit 1
@@ -91,9 +87,9 @@ list_deps() {
 
 	DEPS_LIST=$(grep "REQUIRE" "$PKG_DIR/$1.info" | cut -d '"' -f2)
 	if [ -z "$DEPS_LIST" ]; then
-		echo "No dependencies are required for $1"
+		echo "No dependencies required for $1."
 	else
-		echo -e "List of required dependencies for \"$1\"\n"
+		echo -e "List dependencies required for \"$1\":\n"
 		for dep in $DEPS_LIST; do
 			echo "$dep"
 		done
@@ -143,7 +139,7 @@ case "$1" in
 	build)
 		build_pkg "$2"
 		;;
-	list-deps)
+	deps)
 		list_deps "$2"
 		;;
 	info)
