@@ -145,7 +145,17 @@ EOF
 }
 
 usage() {
-	echo "Usage: $0 {sync|search|list-deps|info|build|install}"
+	cat <<EOF
+Usage: $0 <command> [package-name]
+
+Available commands:
+
+	sync			Clone or update the local slackbuilds repository.
+	search <name>		Search for packages matching the given name.
+	build <name>		Download, verify, and build the specified package.
+	deps <name>		List all dependencies requeired by the specified package
+	info <name>		Show the README, .info file, and SlackBuild script for package
+EOF
 }
 
 case "$1" in
