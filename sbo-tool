@@ -17,11 +17,27 @@ update_repo() {
 	if [ ! -d "$REPO_DIR/.git" ]; then
 		echo "Cloning repository, this may take a while..."
 		mkdir -p "$REPO_DIR"
-		git clone "$REPO_URL" "$REPO_DIR"
-		echo "Operation finished."
+		if ! git clone "$REPO_URL" "$REPO_DIR"; then
+			echo "Failed to clone repository."
+			exit 1
+		fi
+		echo "Clone completed."
 	else
-		echo "Syncing slackbuilds repository..."
-		git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" pull
+		OLD=$(git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" rev-parse HEAD)
+
+		echo "Synchronizing SlackBuilds repository..."
+		if ! git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" pull; then
+			echo "Error: Failed to synchronize the repository."
+			exit 1
+		fi
+
+		NEW=$(git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" rev-parse HEAD)
+		if [ "$OLD" != "$NEW" ]; then
+			read -p "View the ChangeLog[y/N]? " answer
+			if [ "$answer" == "y" ] || [ "$answer" == "Y" ]; then
+				less "$REPO_DIR/ChangeLog.txt"
+			fi
+		fi
 		echo "Done."
 	fi
 }
