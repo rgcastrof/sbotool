@@ -236,10 +236,11 @@ Usage: $0 <command> [package-name]
 
 Available commands:
 
-	sync			Clone or update the local slackbuilds repository.
+	sync			Clone or update the local slackbuilds repository
+	update			Check if installed SBo packages differ from the local SlackBuilds repo
 	list			List all installed packages
-	search <name>		Search for packages matching the given name.
-	build <name>		Download, verify, and build the specified package.
+	search <name>		Search for packages matching the given name
+	build <name>		Download, verify, and build the specified package
 	deps <name>		List all dependencies requeired by the specified package
 	info <name>		Show the README, .info file, and SlackBuild script for package
 EOF
