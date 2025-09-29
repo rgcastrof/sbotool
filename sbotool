@@ -34,6 +34,19 @@ check_dir() {
 	fi
 }
 
+is_newer_version() {
+	local local_version="$1"
+	local repo_version="$2"
+
+	local latest=$(printf "%s\n%s" "$local_version" "$repo_version" | sort -V | tail -n1)
+
+	if [ "$latest" = "$repo_version" ] && [ "$local_version" != "$repo_version" ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
 update_repo() {
 	if [ ! -d "$REPO_DIR/.git" ]; then
 		echo "Cloning repository, this may take a while..."
@@ -136,6 +149,34 @@ build_pkg() {
 	chmod +x "$PKG_DIR/$1.SlackBuild" && "$PKG_DIR/$1.SlackBuild"
 }
 
+update_pkgs() {
+	echo -e "Checking for potential updates...\n"
+	readarray -t installed < <(ls /var/log/packages/*SBo)
+	dif_found=0
+
+	for i in ${!installed[@]}; do
+		pkg=$(basename "${installed[$i]}")
+		name=$(echo "$pkg" | sed -E 's/-[^-]+-[^-]+-[^-]+$//')
+		local_version=$(echo "$pkg" | sed -E 's/^.*-([^-]+)-[^-]+-[^-]+$/\1/')
+
+		repo_path=$(sniff "$REPO_DIR" -t d "$name" | head -n1)
+		repo_version=$(grep "VERSION=" "$repo_path/$name.info" | cut -d '"' -f2)
+		if [ "$local_version" != "$repo_version" ]; then
+			dif_found=1
+
+			if is_newer_version "$local_version" "$repo_version"; then
+				echo -e "$name:\n	package is outdated: installed=$local_version | repo=$repo_version\n"
+			else
+				echo -e "$name:\n	package is newer than the repository: installed=$local_version | repo=$repo_version\n"
+			fi
+		fi
+	done
+
+	if [ "$dif_found" -eq 0 ]; then
+		echo "All packages are up to date!"
+	fi
+}
+
 list_deps() {
 	check_dir "$1"
 
@@ -210,6 +251,9 @@ case "$1" in
 		;;
 	search)
 		search_pkg "$2"
+		;;
+	update)
+		update_pkgs
 		;;
 	build)
 		build_pkg "$2"
