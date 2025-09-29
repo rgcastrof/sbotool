@@ -86,13 +86,19 @@ build_pkg() {
 	# Extract MD5 hashes from the .info file
 	readarray -t MD5SUM < <(grep -oE '[[:xdigit:]]{32}' "$PKG_DIR/$1.info")
 
-		if [ -z "$SRC" ]; then
-			SRC="$file"
+	# Verify integrity of downloaded files
+	for i in "${!SRC[@]}"; do
+		src=$(md5sum "${SRC[$i]}" | awk '{print $1}')
+		echo "Verifying MD5 checksum for: $(basename ${SRC[$i]})..."
+		if [ "$src" = "${MD5SUM[$i]}" ]; then
+			echo -e "Checksum OK.\n"
 		else
-			SRC="$SRC $file"
+			echo "Error: Checksum mismatch!"
+			exit 1
 		fi
 	done
 
+	chmod +x "$PKG_DIR/$1.SlackBuild" && "$PKG_DIR/$1.SlackBuild"
 }
 
 list_deps() {
