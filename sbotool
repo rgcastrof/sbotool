@@ -62,6 +62,13 @@ update_repo() {
 }
 
 search_pkg() {
+	if [ -z $1 ]; then
+		echo "Error: you need to specify a name"
+		exit 1
+	fi
+
+	readarray -t installed < <(ls /var/log/packages | grep "SBo" | sed -E 's/-[^-]+-[^-]+$//')
+
 	NAMES_MATCH=$(sniff "$REPO_DIR" -p -t d "$1")
 	if [ -z "$NAMES_MATCH" ]; then
 		echo "Package $1 not found"
@@ -69,7 +76,14 @@ search_pkg() {
 		echo -e "Searching for $1 in the local SlackBuilds repository...\n"
 		echo -e "List of all packages with name matching \"$1\".\n"
 		for pkg_dir in $NAMES_MATCH; do
-			echo "$(basename "$pkg_dir")"
+			pkg_name=$(basename "$pkg_dir")
+			version=$(grep "VERSION" "$pkg_dir/$pkg_name.info" | cut -d '"' -f2)
+			pkg="$pkg_name-$version"
+			if [ ! -z $(printf "%s\n" "${installed[@]}" | grep "$pkg_name") ]; then
+				echo "[ installed ] - $pkg"
+			else
+				echo "[uninstalled] - $pkg"
+			fi
 		done
 	fi
 }
