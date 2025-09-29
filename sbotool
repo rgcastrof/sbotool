@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-LOCAL_DIR="/var/lib/sbo-tool"
+LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
 REPO_DIR="$LOCAL_DIR/$REPO_NAME"
