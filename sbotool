@@ -67,6 +67,16 @@ show_pkg_status() {
 	fi
 }
 
+process_pkg() {
+	local operation=$1
+	local pkgs="$2"
+
+	check_args $#
+	for pkg in "$pkgs"; do
+		$operation "$pkg"
+	done
+}
+
 update_repo() {
 	if [ ! -d "$REPO_DIR/.git" ]; then
 		echo "Cloning repository, this may take a while..."
@@ -300,25 +310,13 @@ case "$1" in
 		update_pkgs
 		;;
 	build)
-		shift
-		check_args $#
-		for pkg in "$@"; do
-			build_pkg "$pkg"
-		done
+		shift && process_pkg build_pkg "$@"
 		;;
 	install)
-		shift
-		check_args $#
-		for pkg in "$@"; do
-			install_pkg "$pkg"
-		done
+		shift && process_pkg install_pkg "$@"
 		;;
 	deps)
-		shift
-		check_args $#
-		for pkg in "$@"; do
-			list_deps "$pkg"
-		done
+		shift && process_pkg list_deps "$@"
 		;;
 	list)
 		list_installed
