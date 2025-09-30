@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.1.1
+VERSION=0.1.2
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -60,7 +60,7 @@ show_pkg_status() {
 	local -n installed_ref=$1
 	local pkg="$2"
 
-	if [ ! -z $(printf "%s\n" "${installed_ref[@]}" | grep "$pkg") ]; then
+	if [ ! -z $(printf "%s\n" "${installed_ref[@]}" | grep -w "$pkg") ]; then
 		echo "[ installed ] - $pkg"
 	else
 		echo "[uninstalled] - $pkg"
