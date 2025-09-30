@@ -166,6 +166,23 @@ build_pkg() {
 	chmod +x "$pkg_dir/$pkg.SlackBuild" && "$pkg_dir/$pkg.SlackBuild"
 }
 
+install_pkg() {
+	local pkg="$1"
+
+	if ! build_pkg "$pkg"; then
+		echo "Error: failed to install package"
+		exit 1
+	fi
+
+	build_path=$(sniff -p -t f -d 0 /tmp/ "$pkg" | sort -V | tail -n1)
+	if [ -z "$build_path" ]; then
+		echo "Error: package not found in /tmp"
+		exit 1
+	fi
+	/sbin/upgradepkg --reinstall --install-new "$build_path"
+	echo "Done upgrading/installing package."
+}
+
 update_pkgs() {
 	echo -e "Checking for potential updates...\n"
 	mapfile -t installed < <(sniff /var/log/packages/ -t f -p "SBo")
@@ -259,10 +276,11 @@ Available commands:
 	sync			Clone or update the local slackbuilds repository
 	update			Check if installed SBo packages differ from the local SlackBuilds repo
 	list			List all installed packages
-	search <name>		Search for packages matching the given name
-	build  [<name>...]	Download, verify, and build the specified package(s)
-	deps   [<name>...]	List all dependencies requeired by the specified package(s)
-	info   <name>		Show the README, .info file, and SlackBuild script for package
+	search  <name>		Search for packages matching the given name
+	build   [<name>...]	Download, verify, and build the specified package(s)
+	install [<name>...]	Build an install the specified package(s)
+	deps    [<name>...]	List all dependencies requeired by the specified package(s)
+	info    <name>		Show the README, .info file, and SlackBuild script for package
 EOF
 }
 
@@ -281,6 +299,13 @@ case "$1" in
 		check_args $#
 		for pkg in "$@"; do
 			build_pkg "$pkg"
+		done
+		;;
+	install)
+		shift
+		check_args $#
+		for pkg in "$@"; do
+			install_pkg "$pkg"
 		done
 		;;
 	deps)
