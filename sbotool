@@ -95,24 +95,25 @@ update_repo() {
 }
 
 search_pkg() {
-	if [ -z $1 ]; then
+	local pkg="$1"
+	if [ -z $pkg ]; then
 		echo "Error: you need to specify a name"
 		exit 1
 	fi
 
 	mapfile -t installed < <(sniff /var/log/packages/ -t f -p "SBo" | sed -E 's/-[^-]+-[^-]+$//')
 
-	names_match=$(sniff "$REPO_DIR" -p -t d "$1")
+	names_match=$(sniff "$REPO_DIR" -p -t d "$pkg")
 	if [ -z "$names_match" ]; then
-		echo "Package $1 not found"
+		echo "Package $pkg not found"
 	else
-		echo -e "Searching for $1 in the local SlackBuilds repository...\n"
-		echo -e "List of all packages with name matching \"$1\".\n"
+		echo -e "Searching for $pkg in the local SlackBuilds repository...\n"
+		echo -e "List of all packages with name matching \"$pkg\".\n"
 		for pkg_dir in $names_match; do
 			pkg_name=$(basename "$pkg_dir")
 			version=$(grep "VERSION" "$pkg_dir/$pkg_name.info" | cut -d '"' -f2)
-			pkg="$pkg_name-$version"
-			show_pkg_status installed "$pkg_name"
+			pkg_full="$pkg_name-$version"
+			show_pkg_status installed "$pkg_full"
 		done
 	fi
 }
