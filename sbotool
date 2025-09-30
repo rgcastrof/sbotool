@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.1.0
+VERSION=0.1.1
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -38,7 +38,6 @@ check_dir() {
 is_newer_version() {
 	local local_version="$1"
 	local repo_version="$2"
-
 	local latest=$(printf "%s\n%s" "$local_version" "$repo_version" | sort -V | tail -n1)
 
 	if [ "$latest" = "$repo_version" ] && [ "$local_version" != "$repo_version" ]; then
@@ -49,7 +48,9 @@ is_newer_version() {
 }
 
 check_args() {
-	if [ $# -eq 0 ]; then
+	local args="$1"
+
+	if [ "$args" -eq 0 ]; then
 		echo -e "Error: You need to pass at least one argument\n"
 		exit 1
 	fi
@@ -97,6 +98,7 @@ update_repo() {
 
 search_pkg() {
 	local pkg="$1"
+
 	if [ -z $pkg ]; then
 		echo "Error: you need to specify a name"
 		exit 1
@@ -131,8 +133,8 @@ build_pkg() {
 	for ext in $exts; do
 		download=$(grep "$ext" "$pkg_dir/$pkg.info")
 		if [ ! -z "$download" ]; then
-			urls=$(echo "$DOWNLOAD" | sed -E 's/^DOWNLOAD[^=]*=//')
-			urls=$(echo "$URLS" | tr -d '"' | tr -d '\\' | sed 's/^[[:space:]]*//')
+			urls=$(echo "$download" | sed -E 's/^DOWNLOAD[^=]*=//')
+			urls=$(echo "$urls" | tr -d '"' | tr -d '\\' | sed 's/^[[:space:]]*//')
 		fi
 	done
 
