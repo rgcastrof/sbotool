@@ -47,6 +47,14 @@ is_newer_version() {
 	fi
 }
 
+check_args() {
+	local args=$1
+	if [ "$args" -eq 0 ]; then
+		echo -e "Error: You need to pass at least one argument\n"
+		exit 1
+	fi
+}
+
 update_repo() {
 	if [ ! -d "$REPO_DIR/.git" ]; then
 		echo "Cloning repository, this may take a while..."
@@ -240,9 +248,9 @@ Available commands:
 	update			Check if installed SBo packages differ from the local SlackBuilds repo
 	list			List all installed packages
 	search <name>		Search for packages matching the given name
-	build <name>		Download, verify, and build the specified package
-	deps <name>		List all dependencies requeired by the specified package
-	info <name>		Show the README, .info file, and SlackBuild script for package
+	build  [<name>...]	Download, verify, and build the specified package(s)
+	deps   [<name>...]	List all dependencies requeired by the specified package(s)
+	info   <name>		Show the README, .info file, and SlackBuild script for package
 EOF
 }
 
@@ -257,10 +265,18 @@ case "$1" in
 		update_pkgs
 		;;
 	build)
-		build_pkg "$2"
+		shift
+		check_args $#
+		for pkg in "$@"; do
+			build_pkg "$pkg"
+		done
 		;;
 	deps)
-		list_deps "$2"
+		shift
+		check_args $#
+		for pkg in "$@"; do
+			list_deps "$pkg"
+		done
 		;;
 	list)
 		list_installed
