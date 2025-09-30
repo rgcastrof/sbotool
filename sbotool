@@ -27,8 +27,8 @@ REPO_DIR="$LOCAL_DIR/$REPO_NAME"
 check_dir() {
 	local pkg="$1"
 
-	PKG_DIR=$(sniff "$REPO_DIR" -t d "$pkg")
-	if [ -z "$PKG_DIR" ]; then
+	pkg_dir=$(sniff "$REPO_DIR" -t d "$pkg")
+	if [ -z "$pkg_dir" ]; then
 		echo "Package $pkg not found."
 		exit 1
 	fi
@@ -48,8 +48,7 @@ is_newer_version() {
 }
 
 check_args() {
-	local args=$1
-	if [ "$args" -eq 0 ]; then
+	if [ $# -eq 0 ]; then
 		echo -e "Error: You need to pass at least one argument\n"
 		exit 1
 	fi
@@ -59,7 +58,7 @@ show_pkg_status() {
 	local -n installed_ref=$1
 	local pkg="$2"
 
-	if [ ! -z $(printf "%s\n" "${installed_ref[@]}" | grep "$pkg") ]; then
+	if [ ! -z $(printf "%s\n" "${installed_ref[@]}" | grep -q "$pkg") ]; then
 		echo "[ installed ] - $pkg"
 	else
 		echo "[uninstalled] - $pkg"
@@ -76,7 +75,7 @@ update_repo() {
 		fi
 		echo "Clone completed."
 	else
-		OLD=$(git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" rev-parse HEAD)
+		old=$(git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" rev-parse HEAD)
 
 		echo "Synchronizing SlackBuilds repository..."
 		if ! git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" pull; then
@@ -84,8 +83,8 @@ update_repo() {
 			exit 1
 		fi
 
-		NEW=$(git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" rev-parse HEAD)
-		if [ "$OLD" != "$NEW" ]; then
+		new=$(git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" rev-parse HEAD)
+		if [ "$old" != "$new" ]; then
 			read -p "View the ChangeLog[y/N]? " answer
 			if [ "$answer" == "y" ] || [ "$answer" == "Y" ]; then
 				less "$REPO_DIR/ChangeLog.txt"
@@ -101,15 +100,15 @@ search_pkg() {
 		exit 1
 	fi
 
-	readarray -t installed < <(ls /var/log/packages | grep "SBo" | sed -E 's/-[^-]+-[^-]+$//')
+	mapfile -t installed < <(sniff /var/log/packages/ -t f -p "SBo" | sed -E 's/-[^-]+-[^-]+$//')
 
-	NAMES_MATCH=$(sniff "$REPO_DIR" -p -t d "$1")
-	if [ -z "$NAMES_MATCH" ]; then
+	names_match=$(sniff "$REPO_DIR" -p -t d "$1")
+	if [ -z "$names_match" ]; then
 		echo "Package $1 not found"
 	else
 		echo -e "Searching for $1 in the local SlackBuilds repository...\n"
 		echo -e "List of all packages with name matching \"$1\".\n"
-		for pkg_dir in $NAMES_MATCH; do
+		for pkg_dir in $names_match; do
 			pkg_name=$(basename "$pkg_dir")
 			version=$(grep "VERSION" "$pkg_dir/$pkg_name.info" | cut -d '"' -f2)
 			pkg="$pkg_name-$version"
@@ -119,35 +118,37 @@ search_pkg() {
 }
 
 build_pkg() {
-	check_dir "$1"
-	EXTS=".gz .xz zip .crate .bz2"
-	URLS=""
-	SRC=()
+	local pkg="$1"
+	check_dir "$pkg"
+
+	exts=".gz .xz zip .crate .bz2"
+	urls=""
+	src=()
 	
 	# Extract source urls from the .info file
-	for ext in $EXTS; do
-		DOWNLOAD=$(grep "$ext" "$PKG_DIR/$1.info")
-		if [ ! -z "$DOWNLOAD" ]; then
-			URLS=$(echo "$DOWNLOAD" | sed -E 's/^DOWNLOAD[^=]*=//')
-			URLS=$(echo "$URLS" | tr -d '"' | tr -d '\\' | sed 's/^[[:space:]]*//')
+	for ext in $exts; do
+		download=$(grep "$ext" "$pkg_dir/$pkg.info")
+		if [ ! -z "$download" ]; then
+			urls=$(echo "$DOWNLOAD" | sed -E 's/^DOWNLOAD[^=]*=//')
+			urls=$(echo "$URLS" | tr -d '"' | tr -d '\\' | sed 's/^[[:space:]]*//')
 		fi
 	done
 
 	# Download source files
-	for url in $URLS; do
-		echo -e "\nDownloading source from: $url to directory: $PKG_DIR...\n"
-		if wget -P "$PKG_DIR" "$url"; then
+	for url in $urls; do
+		echo -e "\nDownloading source from: $url to directory: $pkg_dir...\n"
+		if wget -P "$pkg_dir" "$url"; then
 			echo -e "\nDownload completed successfully\n"
 		else
 			echo -e "\nError: Failed to download source file\n"
 			exit 1
 		fi
-		file="$PKG_DIR/$(basename "$url")"
-		SRC+=("$file")
+		file="$pkg_dir/$(basename "$url")"
+		src+=("$file")
 	done
 
 	# Extract MD5 hashes from the .info file
-	readarray -t MD5SUM < <(grep -oE '[[:xdigit:]]{32}' "$PKG_DIR/$1.info")
+	mapfile -t MD5SUM < <(grep -oE '[[:xdigit:]]{32}' "$pkg_dir/$pkg.info")
 
 	# Verify integrity of downloaded files
 	for i in "${!SRC[@]}"; do
@@ -161,12 +162,12 @@ build_pkg() {
 		fi
 	done
 
-	chmod +x "$PKG_DIR/$1.SlackBuild" && "$PKG_DIR/$1.SlackBuild"
+	chmod +x "$pkg_dir/$pkg.SlackBuild" && "$pkg_dir/$pkg.SlackBuild"
 }
 
 update_pkgs() {
 	echo -e "Checking for potential updates...\n"
-	readarray -t installed < <(ls /var/log/packages/*SBo)
+	mapfile -t installed < <(sniff /var/log/packages/ -t f -p "SBo")
 	dif_found=0
 
 	for i in ${!installed[@]}; do
@@ -193,53 +194,56 @@ update_pkgs() {
 }
 
 list_deps() {
-	check_dir "$1"
+	local pkg="$1"
+	check_dir "$pkg"
 
-	DEPS_LIST=$(grep "REQUIRE" "$PKG_DIR/$1.info" | cut -d '"' -f2)
-	if [ -z "$DEPS_LIST" ]; then
-		echo "No dependencies required for $1."
+	mapfile -t installed < <(sniff /var/log/packages/ -t f -p "SBo")
+	deps_list=$(grep "REQUIRE" "$pkg_dir/$pkg.info" | cut -d '"' -f2)
+	if [ -z "$deps_list" ]; then
+		echo "No dependencies required for $pkg."
 	else
-		echo -e "List dependencies required for \"$1\":\n"
-		for dep in $DEPS_LIST; do
+		echo -e "List dependencies required for \"$pkg\":\n"
+		for dep in $deps_list; do
 			show_pkg_status installed "$dep"
 		done
 	fi
 }
 
 list_installed() {
-	INSTALLED=$(ls /var/log/packages | grep "SBo")
+	installed_pkgs=$(sniff /var/log/packages/ -t f -p "SBo")
 
 	less <<EOF
 List of installed SBo packages:
 
-$INSTALLED
+$installed_pkgs
 EOF
 }
 
 show_info() {
-	check_dir "$1"
-	README=$(cat "$PKG_DIR/README" 2>/dev/null)
-	INFO=$(cat "$PKG_DIR/$1.info" 2>/dev/null)
-	SLACKBUILD=$(cat "$PKG_DIR/$1.SlackBuild" 2>/dev/null)
+	local pkg="$1"
+	check_dir "$pkg"
+	readme=$(cat "$pkg_dir/README" 2>/dev/null)
+	info=$(cat "$pkg_dir/$pkg.info" 2>/dev/null)
+	slackbuild=$(cat "$pkg_dir/$pkg.SlackBuild" 2>/dev/null)
 
 	less <<EOF
 +--------+
 | README |
 +--------+
 
-$README
+$readme
 
 +------+
 | INFO |
 +------+
 
-$INFO
+$info
 
 +------------+
 | SLACKBUILD |
 +------------+
 
-$SLACKBUILD
+$slackbuild
 
 EOF
 
