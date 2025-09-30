@@ -58,7 +58,7 @@ show_pkg_status() {
 	local -n installed_ref=$1
 	local pkg="$2"
 
-	if [ ! -z $(printf "%s\n" "${installed_ref[@]}" | grep -q "$pkg") ]; then
+	if [ ! -z $(printf "%s\n" "${installed_ref[@]}" | grep "$pkg") ]; then
 		echo "[ installed ] - $pkg"
 	else
 		echo "[uninstalled] - $pkg"
