@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.1.2
+VERSION=0.2.2
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -196,6 +196,11 @@ install_pkg() {
 	echo "Done upgrading/installing package."
 }
 
+remove_pkg() {
+	local pkg="$1"
+	/sbin/removepkg "$pkg"
+}
+
 update_pkgs() {
 	echo -e "Checking for potential updates...\n"
 	mapfile -t installed < <(sniff /var/log/packages/ -t f -p "SBo")
@@ -293,7 +298,8 @@ Available commands:
 	list			List all installed packages
 	search  <name>		Search for packages matching the given name
 	build   [<name>...]	Download, verify, and build the specified package(s)
-	install [<name>...]	Build an install the specified package(s)
+	install [<name>...]	Build and install the specified package(s)
+	remove  [<name>...]	Remove the specified package(s)
 	deps    [<name>...]	List all dependencies requeired by the specified package(s)
 	info    <name>		Show the README, .info file, and SlackBuild script for package
 EOF
@@ -314,6 +320,9 @@ case "$1" in
 		;;
 	install)
 		shift && process_pkg install_pkg "$@"
+		;;
+	remove)
+		shift && process_pkg remove_pkg "$@"
 		;;
 	deps)
 		shift && process_pkg list_deps "$@"
