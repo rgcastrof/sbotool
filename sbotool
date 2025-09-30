@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.2.2
+VERSION=0.2.3
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -69,10 +69,11 @@ show_pkg_status() {
 
 process_pkg() {
 	local operation=$1
-	local pkgs="$2"
+	shift
+	local pkgs="$@"
 
 	check_args $#
-	for pkg in "$pkgs"; do
+	for pkg in $pkgs; do
 		$operation "$pkg"
 	done
 }
