@@ -55,6 +55,17 @@ check_args() {
 	fi
 }
 
+show_pkg_status() {
+	local -n installed_ref=$1
+	local pkg="$2"
+
+	if [ ! -z $(printf "%s\n" "${installed_ref[@]}" | grep "$pkg") ]; then
+		echo "[ installed ] - $pkg"
+	else
+		echo "[uninstalled] - $pkg"
+	fi
+}
+
 update_repo() {
 	if [ ! -d "$REPO_DIR/.git" ]; then
 		echo "Cloning repository, this may take a while..."
@@ -102,11 +113,7 @@ search_pkg() {
 			pkg_name=$(basename "$pkg_dir")
 			version=$(grep "VERSION" "$pkg_dir/$pkg_name.info" | cut -d '"' -f2)
 			pkg="$pkg_name-$version"
-			if [ ! -z $(printf "%s\n" "${installed[@]}" | grep "$pkg_name") ]; then
-				echo "[ installed ] - $pkg"
-			else
-				echo "[uninstalled] - $pkg"
-			fi
+			show_pkg_status installed "$pkg_name"
 		done
 	fi
 }
@@ -194,7 +201,7 @@ list_deps() {
 	else
 		echo -e "List dependencies required for \"$1\":\n"
 		for dep in $DEPS_LIST; do
-			echo "$dep"
+			show_pkg_status installed "$dep"
 		done
 	fi
 }
