@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.2.3
+VERSION=0.2.4
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -144,8 +144,7 @@ build_pkg() {
 	for ext in $exts; do
 		download=$(grep "$ext" "$pkg_dir/$pkg.info")
 		if [ ! -z "$download" ]; then
-			urls=$(echo "$download" | sed -E 's/^DOWNLOAD[^=]*=//')
-			urls=$(echo "$urls" | tr -d '"' | tr -d '\\' | sed 's/^[[:space:]]*//')
+			urls=$(echo "$download" | sed -E 's/^DOWNLOAD[^=]*=//' | tr -d '"' | tr -d '\\' | sed 's/^[[:space:]]*//')
 		fi
 	done
 
