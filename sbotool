@@ -24,6 +24,7 @@ LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
 REPO_DIR="$LOCAL_DIR/$REPO_NAME"
+QUEUE_DIR="$LOCAL_DIR/queues"
 
 check_dir() {
 	local pkg="$1"
@@ -285,6 +286,18 @@ EOF
 
 }
 
+queue_add() {
+	local pkgs=("$@")
+
+	if [ ! -d "$QUEUE_DIR" ]; then
+		mkdir -p "$QUEUE_DIR"
+	fi
+
+	for pkg in "${pkgs[@]}"; do
+		echo "$pkg" >> "$QUEUE_DIR/current.lst"
+	done
+
+}
 usage() {
 	cat <<EOF
 SboTool - version $VERSION
@@ -326,6 +339,10 @@ case "$1" in
 		;;
 	deps)
 		shift && process_pkg list_deps "$@"
+		;;
+	queue)
+		shift
+		queue_args "$1" "$@"
 		;;
 	list)
 		list_installed
