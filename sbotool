@@ -298,6 +298,32 @@ queue_add() {
 	done
 
 }
+
+queue_run() {
+	if [ -z "$1" ]; then
+		queue_file="$QUEUE_DIR/current.lst"
+	else
+		queue_file=$(sniff -t f "$QUEUE_DIR" "$1")
+	fi
+
+	if [ ! -f "$queue_file" ]; then
+		echo "Error: no existing queue"
+		exit 1
+	fi
+
+	queue=$(cat "$queue_file")
+	process_pkg install_pkg "$queue"
+	queue_name=$(basename "$queue_file")
+	if [ "$queue_name" == "current.lst" ]; then
+		read -p "Do you want to save this queue[y/N]? " answer
+		if [ "$answer" == "y" ] || [ "$answer" == "Y" ]; then
+			if cat "$queue_file" > "$QUEUE_DIR/$(tail -n1 $queue_file).lst"; then
+				echo "Queue saved successfully"
+			fi
+		fi
+		rm "$queue_file"
+	fi
+}
 usage() {
 	cat <<EOF
 SboTool - version $VERSION
