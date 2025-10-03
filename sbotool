@@ -324,6 +324,16 @@ queue_run() {
 		rm "$queue_file"
 	fi
 }
+
+# TODO: finish implementation of queue_show to view the current queue
+queue_show() {
+	cat "$QUEUE_DIR/current.lst"
+}
+
+# TODO: finish queue_clear to receive a queue file as argument
+queue_clear() {
+	> "$QUEUE_DIR/current.lst"
+}
 usage() {
 	cat <<EOF
 SboTool - version $VERSION
