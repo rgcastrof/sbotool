@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.2.4
+VERSION=0.3.5
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -92,6 +92,11 @@ update_repo() {
 		old=$(git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" rev-parse HEAD)
 
 		echo "Synchronizing SlackBuilds repository..."
+
+		# clean the changes made in the local repo before updating
+		git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" reset --hard HEAD
+
+		# pull updates
 		if ! git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" pull; then
 			echo "Error: Failed to synchronize the repository."
 			exit 1
