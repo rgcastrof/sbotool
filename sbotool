@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.6.6
+VERSION=0.7.6
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -375,11 +375,17 @@ queue_args() {
 		run)
 			queue_run "$@"
 			;;
+		list)
+			queue_list
+			;;
 		show)
-			queue_show
+			queue_show "$@"
 			;;
 		clear)
 			queue_clear
+			;;
+		*)
+			usage
 			;;
 	esac
 }
