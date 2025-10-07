@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.3.6
+VERSION=0.4.6
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -286,6 +286,19 @@ EOF
 
 }
 
+get_queue_file() {
+	if [ -z "$1" ]; then
+		queue_file="$QUEUE_DIR/current.lst"
+	else
+		queue_file=$(sniff -t f -p "$QUEUE_DIR" "$1")
+	fi
+
+	if [ ! -f "$queue_file" ]; then
+		echo "Error: no existing queue"
+		exit 1
+	fi
+}
+
 queue_add() {
 	local pkgs=("$@")
 
@@ -300,16 +313,7 @@ queue_add() {
 }
 
 queue_run() {
-	if [ -z "$1" ]; then
-		queue_file="$QUEUE_DIR/current.lst"
-	else
-		queue_file=$(sniff -t f "$QUEUE_DIR" "$1")
-	fi
-
-	if [ ! -f "$queue_file" ]; then
-		echo "Error: no existing queue"
-		exit 1
-	fi
+	get_queue_file "$1"
 
 	queue=$(cat "$queue_file")
 	process_pkg install_pkg "$queue"
