@@ -19,12 +19,13 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.3.5
+VERSION=0.3.6
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
 REPO_DIR="$LOCAL_DIR/$REPO_NAME"
 QUEUE_DIR="$LOCAL_DIR/queues"
+mapfile -t INSTALLED < <(sniff /var/log/packages/ -t f -p "SBo")
 
 check_dir() {
 	local pkg="$1"
@@ -121,8 +122,6 @@ search_pkg() {
 		exit 1
 	fi
 
-	mapfile -t installed < <(sniff /var/log/packages/ -t f -p "SBo" | sed -E 's/-[^-]+-[^-]+$//')
-
 	names_match=$(sniff "$REPO_DIR" -p -t d "$pkg")
 	if [ -z "$names_match" ]; then
 		echo "Package $pkg not found"
@@ -133,7 +132,7 @@ search_pkg() {
 			pkg_name=$(basename "$pkg_dir")
 			version=$(grep "VERSION" "$pkg_dir/$pkg_name.info" | cut -d '"' -f2)
 			pkg_full="$pkg_name-$version"
-			show_pkg_status installed "$pkg_full"
+			show_pkg_status INSTALLED "$pkg_full"
 		done
 	fi
 }
@@ -209,11 +208,10 @@ remove_pkg() {
 
 update_pkgs() {
 	echo -e "Checking for potential updates...\n"
-	mapfile -t installed < <(sniff /var/log/packages/ -t f -p "SBo")
 	dif_found=0
 
-	for i in ${!installed[@]}; do
-		pkg=$(basename "${installed[$i]}")
+	for i in ${!INSTALLED[@]}; do
+		pkg=$(basename "${INSTALLED[$i]}")
 		name=$(echo "$pkg" | sed -E 's/-[^-]+-[^-]+-[^-]+$//')
 		local_version=$(echo "$pkg" | sed -E 's/^.*-([^-]+)-[^-]+-[^-]+$/\1/')
 
@@ -239,25 +237,22 @@ list_deps() {
 	local pkg="$1"
 	check_dir "$pkg"
 
-	mapfile -t installed < <(sniff /var/log/packages/ -t f -p "SBo")
 	deps_list=$(grep "REQUIRE" "$pkg_dir/$pkg.info" | cut -d '"' -f2)
 	if [ -z "$deps_list" ]; then
 		echo "No dependencies required for $pkg."
 	else
 		echo -e "List dependencies required for \"$pkg\":\n"
 		for dep in $deps_list; do
-			show_pkg_status installed "$dep"
+			show_pkg_status INSTALLED "$dep"
 		done
 	fi
 }
 
 list_installed() {
-	installed_pkgs=$(sniff /var/log/packages/ -t f -p "SBo")
-
 	less <<EOF
 List of installed SBo packages:
 
-$installed_pkgs
+$INSTALLED
 EOF
 }
 
