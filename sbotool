@@ -19,12 +19,13 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.7.6
+VERSION=0.8.6
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
 REPO_DIR="$LOCAL_DIR/$REPO_NAME"
 QUEUE_DIR="$LOCAL_DIR/queues"
+EXTS=".gz .xz zip .crate .bz2 .deb"
 mapfile -t INSTALLED < <(sniff /var/log/packages/ -t f -p "SBo")
 
 check_dir() {
@@ -137,16 +138,29 @@ search_pkg() {
 	fi
 }
 
+check_source() {
+	for ext in $EXTS; do
+		source=$(sniff -p -t f "$pkg_dir" "$ext")
+		if [ ! -z "$source" ]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
 build_pkg() {
 	local pkg="$1"
 	check_dir "$pkg"
-
-	exts=".gz .xz zip .crate .bz2"
 	urls=""
 	src=()
+
+	if check_source; then
+		chmod +x "$pkg_dir/$pkg.SlackBuild" && "$pkg_dir/$pkg.SlackBuild"
+		return
+	fi
 	
 	# Extract source urls from the .info file
-	for ext in $exts; do
+	for ext in $EXTS; do
 		download=$(grep "$ext" "$pkg_dir/$pkg.info")
 		if [ ! -z "$download" ]; then
 			urls=$(echo "$download" | sed -E 's/^DOWNLOAD[^=]*=//' | tr -d '"' | tr -d '\\' | sed 's/^[[:space:]]*//')
