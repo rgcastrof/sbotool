@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.4.6
+VERSION=0.5.6
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -329,6 +329,18 @@ queue_run() {
 	fi
 }
 
+queue_list() {
+	queues=$(ls /var/lib/sbotool/queues/)
+	if [ -z "$queues" ]; then
+		echo "Failed, no existing queues."
+		exit 1
+	else
+		echo -e "List of saved queues:\n"
+		for queue in "$queues"; do
+			echo "$queue"
+		done
+	fi
+}
 # TODO: finish implementation of queue_show to view the current queue
 queue_show() {
 	cat "$QUEUE_DIR/current.lst"
