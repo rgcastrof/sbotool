@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.5.6
+VERSION=0.6.6
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -341,9 +341,21 @@ queue_list() {
 		done
 	fi
 }
-# TODO: finish implementation of queue_show to view the current queue
+
 queue_show() {
-	cat "$QUEUE_DIR/current.lst"
+	queue_files=()
+
+	for arg in "$@"; do
+		queue_file=$(sniff -t f -p "$QUEUE_DIR" "$arg")
+		if [ ! -z "$queue_file" ]; then
+			echo "Current packages added in queue \"$arg\":"
+			pkg_list=$(cat "$queue_file")
+			for pkg in $pkg_list; do
+				show_pkg_status INSTALLED "$pkg"
+			done
+		fi
+		echo
+	done
 }
 
 # TODO: finish queue_clear to receive a queue file as argument
