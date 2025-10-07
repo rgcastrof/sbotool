@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.8.6
+VERSION=0.8.7
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -54,7 +54,8 @@ check_args() {
 	local args="$1"
 
 	if [ "$args" -eq 0 ]; then
-		echo -e "Error: You need to pass at least one argument\n"
+		echo "Error: You need to pass at least one argument."
+		echo
 		exit 1
 	fi
 }
@@ -127,8 +128,10 @@ search_pkg() {
 	if [ -z "$names_match" ]; then
 		echo "Package $pkg not found"
 	else
-		echo -e "Searching for $pkg in the local SlackBuilds repository...\n"
-		echo -e "List of all packages with name matching \"$pkg\".\n"
+		echo "Searching for $pkg in the local SlackBuilds repository..."
+		echo
+		echo "List of all packages with name matching \"$pkg\"."
+		echo
 		for pkg_dir in $names_match; do
 			pkg_name=$(basename "$pkg_dir")
 			version=$(grep "VERSION" "$pkg_dir/$pkg_name.info" | cut -d '"' -f2)
@@ -169,11 +172,17 @@ build_pkg() {
 
 	# Download source files
 	for url in $urls; do
-		echo -e "\nDownloading source from: $url to directory: $pkg_dir...\n"
+		echo
+		echo "Downloading source from: $url to directory: $pkg_dir..."
+		echo
 		if wget -P "$pkg_dir" "$url"; then
-			echo -e "\nDownload completed successfully\n"
+			echo
+			echo "Download completed successfully"
+			echo
 		else
-			echo -e "\nError: Failed to download source file\n"
+			echo
+			echo "Error: Failed to download source file"
+			echo
 			exit 1
 		fi
 		file="$pkg_dir/$(basename "$url")"
@@ -188,7 +197,8 @@ build_pkg() {
 		src=$(md5sum "${SRC[$i]}" | awk '{print $1}')
 		echo "Verifying MD5 checksum for: $(basename ${SRC[$i]})..."
 		if [ "$src" = "${MD5SUM[$i]}" ]; then
-			echo -e "Checksum OK.\n"
+			echo "Checksum OK."
+			echo
 		else
 			echo "Error: Checksum mismatch!"
 			exit 1
@@ -221,7 +231,8 @@ remove_pkg() {
 }
 
 update_pkgs() {
-	echo -e "Checking for potential updates...\n"
+	echo "Checking for potential updates..."
+	echo
 	dif_found=0
 
 	for i in ${!INSTALLED[@]}; do
@@ -235,9 +246,13 @@ update_pkgs() {
 			dif_found=1
 
 			if is_newer_version "$local_version" "$repo_version"; then
-				echo -e "$name:\n	package is outdated: installed=$local_version | repo=$repo_version\n"
+				echo
+				echo "$name:	package is outdated: installed=$local_version | repo=$repo_version"
+				echo
 			else
-				echo -e "$name:\n	package is newer than the repository: installed=$local_version | repo=$repo_version\n"
+				echo
+				echo "$name:	package is newer than the repository: installed=$local_version | repo=$repo_version"
+				echo
 			fi
 		fi
 	done
@@ -255,7 +270,8 @@ list_deps() {
 	if [ -z "$deps_list" ]; then
 		echo "No dependencies required for $pkg."
 	else
-		echo -e "List dependencies required for \"$pkg\":\n"
+		echo "List dependencies required for \"$pkg\":"
+		echo
 		for dep in $deps_list; do
 			show_pkg_status INSTALLED "$dep"
 		done
@@ -349,7 +365,8 @@ queue_list() {
 		echo "Failed, no existing queues."
 		exit 1
 	else
-		echo -e "List of saved queues:\n"
+		echo "List of saved queues:"
+		echo
 		for queue in "$queues"; do
 			echo "$queue"
 		done
