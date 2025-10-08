@@ -20,7 +20,7 @@
 # Rogério Girão rogeriogirao1@proton.me
 #
 NAME=$(basename "$0")
-VERSION=0.9.10
+VERSION=0.10.10
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -422,6 +422,12 @@ queue_args() {
 	esac
 }
 
+show_changelog() {
+	if ! less "$REPO_DIR/ChangeLog.txt"; then
+		echo "Error: ChangeLog file not found."
+	fi
+}
+
 usage() {
 	cat <<EOF
 $NAME - version $VERSION
@@ -500,6 +506,9 @@ case "$1" in
 		;;
 	info)
 		show_info "$2"
+		;;
+	changelog)
+		show_changelog
 		;;
 	help)
 		show_help
