@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.8.8
+VERSION=0.9.8
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -423,26 +423,50 @@ queue_args() {
 
 usage() {
 	cat <<EOF
-SboTool - version $VERSION
+sbotool - version $VERSION
 
 Usage:
+       $0 {sync|update|list}
+       $0 {build|install|remove|search|deps} [PACKAGE]
+       $0 info [PACKAGE]
+       $0 queue {add|run|list|show|clear} [PACKAGE|QUEUE]
+       $0 {changelog|help}
 
-	$0 sync			Clone or update the local slackbuilds repository
-	$0 update		Check if installed SBo packages differ from the local SlackBuilds repo
-	$0 list			List all installed SBo packages
-	$0 search  <name>	Search for packages matching the given name
-	$0 install [<name>...]	Build and install the specified package(s)
-	$0 remove  [<name>...]	Remove the specified package(s)
-	$0 info    <name>	Show the README, .info file, and SlackBuild script for the package
-
-For more info, run: sbotool help
+For more info, run: $0 help
 EOF
 }
 
-# TODO: Implement help function
-#
-# help() {
-# }
+show_help() {
+	cat <<EOF
+Usage: $0 <command> [<arg>...]
+
+List of $0 commands:
+
+Synchronize and check for updates:
+	sync                        Clone or update the local slackbuilds repository.
+	update                      Check if installed SBo packages differ from the local SlackBuilds repo.
+
+Work with packages:
+	search  <name>              Search for packages matching the given name.
+	build   [<package>...]      Download, verify, and build the specified package(s).
+	list                        List all installed SBo packages.
+	install [<package>...]      Build and install the specified package(s).
+	remove  [<package>...]      Remove the specified package(s).
+	deps    [<package>...]      List all dependencies requeired by the specified package(s)
+	info    <package>           Show the README, .info file, and SlackBuild script for the package.
+
+Work with queues:
+	queue add  [<package>...]   Add the specified package.
+	queue run  <queue>          Process the specified queue and install the package.
+	queue list [<queue>...]     List the packages added in the specified queue(s).
+	queue rm   [<queue>...]     Delete the specified queue(s).
+	queue show                  List all saved queues.
+
+Show information:
+	changelog                   Open the ChangeLog file for read.
+	help                        Print this help message.
+EOF
+}
 
 case "$1" in
 	sync)
@@ -475,6 +499,9 @@ case "$1" in
 		;;
 	info)
 		show_info "$2"
+		;;
+	help)
+		show_help
 		;;
 	*)
 		usage
