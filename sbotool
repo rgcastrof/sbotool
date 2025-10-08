@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.9.8
+VERSION=0.9.9
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -359,7 +359,7 @@ queue_run() {
 	fi
 }
 
-queue_list() {
+queue_show() {
 	queues=$(ls /var/lib/sbotool/queues/)
 	if [ -z "$queues" ]; then
 		echo "Failed, no existing queues."
@@ -373,7 +373,7 @@ queue_list() {
 	fi
 }
 
-queue_show() {
+queue_list() {
 	queue_files=()
 
 	for arg in "$@"; do
@@ -407,10 +407,10 @@ queue_args() {
 			queue_run "$@"
 			;;
 		list)
-			queue_list
+			queue_list "$@"
 			;;
 		show)
-			queue_show "$@"
+			queue_show
 			;;
 		clear)
 			queue_clear
