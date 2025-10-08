@@ -19,7 +19,7 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.8.7
+VERSION=0.8.8
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -425,21 +425,24 @@ usage() {
 	cat <<EOF
 SboTool - version $VERSION
 
-Usage: $0 <command> [package-name]
+Usage:
 
-Available commands:
+	$0 sync			Clone or update the local slackbuilds repository
+	$0 update		Check if installed SBo packages differ from the local SlackBuilds repo
+	$0 list			List all installed SBo packages
+	$0 search  <name>	Search for packages matching the given name
+	$0 install [<name>...]	Build and install the specified package(s)
+	$0 remove  [<name>...]	Remove the specified package(s)
+	$0 info    <name>	Show the README, .info file, and SlackBuild script for the package
 
-	sync			Clone or update the local slackbuilds repository
-	update			Check if installed SBo packages differ from the local SlackBuilds repo
-	list			List all installed packages
-	search  <name>		Search for packages matching the given name
-	build   [<name>...]	Download, verify, and build the specified package(s)
-	install [<name>...]	Build and install the specified package(s)
-	remove  [<name>...]	Remove the specified package(s)
-	deps    [<name>...]	List all dependencies requeired by the specified package(s)
-	info    <name>		Show the README, .info file, and SlackBuild script for package
+For more info, run: sbotool help
 EOF
 }
+
+# TODO: Implement help function
+#
+# help() {
+# }
 
 case "$1" in
 	sync)
