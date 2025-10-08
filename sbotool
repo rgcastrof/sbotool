@@ -19,7 +19,8 @@
 # Project Page: https://codeberg.org/rgcastrof/sbotool
 # Rogério Girão rogeriogirao1@proton.me
 #
-VERSION=0.9.9
+NAME=$(basename "$0")
+VERSION=0.9.10
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -423,24 +424,24 @@ queue_args() {
 
 usage() {
 	cat <<EOF
-sbotool - version $VERSION
+$NAME - version $VERSION
 
 Usage:
-       $0 {sync|update|list}
-       $0 {build|install|remove|search|deps} [PACKAGE]
-       $0 info [PACKAGE]
-       $0 queue {add|run|list|show|clear} [PACKAGE|QUEUE]
-       $0 {changelog|help}
+       $NAME {sync|update|list}
+       $NAME {build|install|remove|search|deps} [PACKAGE]
+       $NAME info [PACKAGE]
+       $NAME queue {add|run|list|show|clear} [PACKAGE|QUEUE]
+       $NAME {changelog|help}
 
-For more info, run: $0 help
+For more info, run: $NAME help
 EOF
 }
 
 show_help() {
 	cat <<EOF
-Usage: $0 <command> [<arg>...]
+Usage: $NAME <command> [<arg>...]
 
-List of $0 commands:
+List of $NAME commands:
 
 Synchronize and check for updates:
 	sync                        Clone or update the local slackbuilds repository.
