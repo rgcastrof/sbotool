@@ -20,7 +20,7 @@
 # Rogério Girão rogeriogirao1@proton.me
 #
 NAME=$(basename "$0")
-VERSION=0.10.11
+VERSION=0.11.11
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -388,9 +388,17 @@ queue_list() {
 	done
 }
 
-# TODO: finish queue_clear to receive a queue file as argument
-queue_clear() {
-	> "$QUEUE_DIR/current.lst"
+queue_rm() {
+	for arg in "$@"; do
+		get_queue_file "$arg"
+		if [ ! -z "$queue_file" ] && [ -f "$queue_file" ]; then
+			if rm "$queue_file"; then
+				echo "queue $(basename $queue_file) removed successfully."
+			else
+				echo "Failed to remove the queue."
+			fi
+		fi
+	done
 }
 
 queue_args() {
@@ -411,8 +419,8 @@ queue_args() {
 		show)
 			queue_show
 			;;
-		clear)
-			queue_clear
+		rm)
+			queue_rm "$@"
 			;;
 		*)
 			usage
