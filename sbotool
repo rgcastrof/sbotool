@@ -20,7 +20,7 @@
 # Rogério Girão rogeriogirao1@proton.me
 #
 NAME=$(basename "$0")
-VERSION=0.10.10
+VERSION=0.10.11
 LOCAL_DIR="/var/lib/sbotool"
 REPO_NAME="slackbuilds"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
@@ -375,10 +375,8 @@ queue_show() {
 }
 
 queue_list() {
-	queue_files=()
-
 	for arg in "$@"; do
-		queue_file=$(sniff -t f -p "$QUEUE_DIR" "$arg")
+		get_queue_file "$arg"
 		if [ ! -z "$queue_file" ]; then
 			echo "Current packages added in queue \"$arg\":"
 			pkg_list=$(cat "$queue_file")
