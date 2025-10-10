@@ -158,122 +158,37 @@ repo_extract() {
 	fi
 }
 
+repo_update() {
+	echo "Synchronizing SlackBuilds repository..."
 
-	case "$sub_cmd" in
-		add)
-			queue_add "$@"
-			;;
-		run)
-			queue_run "$@"
-			;;
-		list)
-			queue_list "$@"
-			;;
-		show)
-			queue_show
-			;;
-		rm)
-			queue_rm "$@"
-			;;
-		*)
-			usage
-			;;
-	esac
-}
-
-show_changelog() {
-	if ! less "$REPO_DIR/ChangeLog.txt"; then
-		echo "Error: ChangeLog file not found."
+	git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" reset --hard HEAD
+	if ! git --git-dir="$REPO_DIR/.git" --work-tree="$REPO_DIR" pull; then
+		error "Error: Failed to synchronize the repository."
 	fi
 }
 
-usage() {
-	cat <<EOF
-$NAME - version $VERSION
-
-Usage:
-       $NAME {sync|update|list}
-       $NAME {build|install|remove|search|deps} [PACKAGE]
-       $NAME info [PACKAGE]
-       $NAME queue {add|run|list|show|clear} [PACKAGE|QUEUE]
-       $NAME {changelog|help}
-
-For more info, run: $NAME help
-EOF
-}
-
-show_help() {
-	cat <<EOF
-Usage: $NAME <command> [<arg>...]
-
-List of $NAME commands:
-
-Synchronize and check for updates:
-	sync                        Clone or update the local slackbuilds repository.
-	update                      Check if installed SBo packages differ from the local SlackBuilds repo.
-
-Work with packages:
-	search  <name>              Search for packages matching the given name.
-	build   [<package>...]      Download, verify, and build the specified package(s).
-	list                        List all installed SBo packages.
-	install [<package>...]      Build and install the specified package(s).
-	remove  [<package>...]      Remove the specified package(s).
-	deps    [<package>...]      List all dependencies requeired by the specified package(s)
-	info    <package>           Show the README, .info file, and SlackBuild script for the package.
-
-Work with queues:
-	queue add  [<package>...]   Add the specified package.
-	queue run  <queue>          Process the specified queue and install the package.
-	queue list [<queue>...]     List the packages added in the specified queue(s).
-	queue rm   [<queue>...]     Delete the specified queue(s).
-	queue show                  List all saved queues.
-
-Show information:
-	changelog                   Open the ChangeLog file for read.
-	help                        Print this help message.
-EOF
 }
 
 case "$1" in
-	sync)
-		update_repo
+	fetch)
+		handle_fetch_args "$2"
 		;;
-	search)
-		search_pkg "$2"
-		;;
-	update)
-		update_pkgs
+	checksum)
+		pkg_checksum
 		;;
 	build)
-		shift && process_pkg build_pkg "$@"
+		pkg_build
 		;;
 	install)
-		shift && process_pkg install_pkg "$@"
+		pkg_install
 		;;
-	remove)
-		shift && process_pkg remove_pkg "$@"
+	uninstall)
+		pkg_uninstall
 		;;
-	deps)
-		shift && process_pkg list_deps "$@"
-		;;
-	queue)
-		shift
-		queue_args "$1" "$@"
-		;;
-	list)
-		list_installed
-		;;
-	info)
-		show_info "$2"
-		;;
-	changelog)
-		show_changelog
-		;;
-	help)
-		show_help
+	search)
+		pkg_search "$2"
 		;;
 	*)
-		usage
-		exit 1
+		error "Error: Invalid command."
 		;;
 esac
