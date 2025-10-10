@@ -167,6 +167,22 @@ repo_update() {
 	fi
 }
 
+handle_fetch_args() {
+	if [ -z "$1" ]; then
+		pkg_fetch
+	else
+		case "$1" in
+			extract)
+				repo_extract
+				;;
+			update)
+				repo_update
+				;;
+			*)
+				error "Error: invalid command."
+				;;
+		esac
+	fi
 }
 
 case "$1" in
