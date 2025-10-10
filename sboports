@@ -71,67 +71,17 @@ hashes_extract() {
 	fi
 }
 
-check_source() {
-	for ext in $EXTS; do
-		source=$(sniff -p -t f "$pkg_dir" "$ext")
-		if [ ! -z "$source" ]; then
-			return 0
-		fi
-	done
-	return 1
-}
+pkg_checksum() {
+	hashes_extract
+	hashes_arr=($hashes)
+	md5sum_arr=($MD5SUM)
 
-build_pkg() {
-	local pkg="$1"
-	check_dir "$pkg"
-	urls=""
-	src=()
-
-	if check_source; then
-		chmod +x "$pkg_dir/$pkg.SlackBuild" && "$pkg_dir/$pkg.SlackBuild"
-		return
-	fi
-	
-	# Extract source urls from the .info file
-	for ext in $EXTS; do
-		download=$(grep "$ext" "$pkg_dir/$pkg.info")
-		if [ ! -z "$download" ]; then
-			urls=$(echo "$download" | sed -E 's/^DOWNLOAD[^=]*=//' | tr -d '"' | tr -d '\\' | sed 's/^[[:space:]]*//')
-		fi
-	done
-
-	# Download source files
-	for url in $urls; do
-		echo
-		echo "Downloading source from: $url to directory: $pkg_dir..."
-		echo
-		if wget -P "$pkg_dir" "$url"; then
-			echo
-			echo "Download completed successfully"
-			echo
+	echo "Verifying md5sums..."
+	for ((i = 0; i < "${#md5sum_arr[@]}"; i++)); do
+		if [ "${hashes_arr[$i]}" == "${md5sum_arr[$i]}" ]; then
+			echo "Pass!"
 		else
-			echo
-			echo "Error: Failed to download source file"
-			echo
-			exit 1
-		fi
-		file="$pkg_dir/$(basename "$url")"
-		src+=("$file")
-	done
-
-	# Extract MD5 hashes from the .info file
-	mapfile -t MD5SUM < <(grep -oE '[[:xdigit:]]{32}' "$pkg_dir/$pkg.info")
-
-	# Verify integrity of downloaded files
-	for i in "${!SRC[@]}"; do
-		src=$(md5sum "${SRC[$i]}" | awk '{print $1}')
-		echo "Verifying MD5 checksum for: $(basename ${SRC[$i]})..."
-		if [ "$src" = "${MD5SUM[$i]}" ]; then
-			echo "Checksum OK."
-			echo
-		else
-			echo "Error: Checksum mismatch!"
-			exit 1
+			error "Failed!"
 		fi
 	done
 
