@@ -32,26 +32,12 @@ error() {
 	exit 1
 }
 
-is_newer_version() {
-	local local_version="$1"
-	local repo_version="$2"
-	local latest=$(printf "%s\n%s" "$local_version" "$repo_version" | sort -V | tail -n1)
-
-	if [ "$latest" = "$repo_version" ] && [ "$local_version" != "$repo_version" ]; then
+dir_check() {
+	path_dir=$(dirname $(dirname $(pwd)))
+	if [ "$path_dir" == "$REPO_DIR" ]; then
 		return 0
-	else
+	fi
 		return 1
-	fi
-}
-
-check_args() {
-	local args="$1"
-
-	if [ "$args" -eq 0 ]; then
-		echo "Error: You need to pass at least one argument."
-		echo
-		exit 1
-	fi
 }
 
 show_pkg_status() {
