@@ -145,81 +145,19 @@ pkg_search() {
 	fi
 }
 
-queue_add() {
-	local pkgs=("$@")
-
-	if [ ! -d "$QUEUE_DIR" ]; then
-		mkdir -p "$QUEUE_DIR"
-	fi
-
-	for pkg in "${pkgs[@]}"; do
-		echo "$pkg" >> "$QUEUE_DIR/current.lst"
-	done
-
-}
-
-queue_run() {
-	get_queue_file "$1"
-
-	queue=$(cat "$queue_file")
-	process_pkg install_pkg "$queue"
-	queue_name=$(basename "$queue_file")
-	if [ "$queue_name" == "current.lst" ]; then
-		read -p "Do you want to save this queue[y/N]? " answer
-		if [ "$answer" == "y" ] || [ "$answer" == "Y" ]; then
-			if cat "$queue_file" > "$QUEUE_DIR/$(tail -n1 $queue_file).lst"; then
-				echo "Queue saved successfully"
-			fi
+repo_extract() {
+	if [ ! -d "$REPO_DIR/.git" ]; then
+		echo "Cloning repository, this may take a while..."
+		mkdir -p "$REPO_DIR"
+		if ! git clone "$REPO_URL" "$REPO_DIR"; then
+			error "Failed to clone repository."
 		fi
-		rm "$queue_file"
-	fi
-}
-
-queue_show() {
-	queues=$(ls /var/lib/sbotool/queues/)
-	if [ -z "$queues" ]; then
-		echo "Failed, no existing queues."
-		exit 1
+		echo "Clone completed."
 	else
-		echo "List of saved queues:"
-		echo
-		for queue in "$queues"; do
-			echo "$queue"
-		done
+		error "Slackbuilds tree already cloned."
 	fi
 }
 
-queue_list() {
-	for arg in "$@"; do
-		get_queue_file "$arg"
-		if [ ! -z "$queue_file" ]; then
-			echo "Current packages added in queue \"$arg\":"
-			pkg_list=$(cat "$queue_file")
-			for pkg in $pkg_list; do
-				show_pkg_status INSTALLED "$pkg"
-			done
-		fi
-		echo
-	done
-}
-
-queue_rm() {
-	for arg in "$@"; do
-		get_queue_file "$arg"
-		if [ ! -z "$queue_file" ] && [ -f "$queue_file" ]; then
-			if rm "$queue_file"; then
-				echo "queue $(basename $queue_file) removed successfully."
-			else
-				echo "Failed to remove the queue."
-			fi
-		fi
-	done
-}
-
-queue_args() {
-	local sub_cmd="$1"
-	shift 2
-	local pkgs="$@"
 
 	case "$sub_cmd" in
 		add)
