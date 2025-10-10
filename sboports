@@ -118,6 +118,26 @@ pkg_uninstall() {
 	fi
 }
 
+pkg_clean() {
+	if dir_check; then
+		extracted_source=$(find "/tmp/SBo" -maxdepth 2 -type d -name "$PKG_NAME*")
+		for dir in $extracted_source; do
+			rm -rf "$dir"
+		done
+		read -p "Wanna clean the distfiles too? [y/N] " answer
+		if [ "$answer" == "y" ] || [ "$answer" == "Y" ]; then
+			source "$PKG_NAME.info"
+			for distfile in $DOWNLOAD; do
+				if [ -f $(basename "$distfile") ]; then
+					rm "$(basename "$distfile")"
+				fi
+			done
+		fi
+	else
+		error "Error: You are not inside the slackbuilds tree"
+	fi
+}
+
 show_info() {
 	cat <<EOF
 Prgnam:   $PRGNAM-$VERSION
@@ -200,6 +220,9 @@ case "$1" in
 		;;
 	uninstall)
 		pkg_uninstall
+		;;
+	clean)
+		pkg_clean
 		;;
 	search)
 		pkg_search "$2"
