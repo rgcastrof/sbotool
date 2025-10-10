@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# SboTool - An simple tool for building slackbuild packages on slackware
+# sboports - An simple shell-based ports-like manager for SlackBuilds.org scripts.
 # Copyright (C) 2025 Rogério Girão
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,21 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
-# Project Page: https://codeberg.org/rgcastrof/sbotool
+# Project Page: https://codeberg.org/rgcastrof/sboports
 # Rogério Girão rogeriogirao1@proton.me
 #
 NAME=$(basename "$0")
 VERSION=0.11.11
-LOCAL_DIR="/var/lib/sbotool"
+LOCAL_DIR="/var/lib"
 REPO_NAME="slackbuilds"
-REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
 REPO_DIR="$LOCAL_DIR/$REPO_NAME"
-QUEUE_DIR="$LOCAL_DIR/queues"
-EXTS=".gz .xz zip .crate .bz2 .deb"
-mapfile -t INSTALLED < <(sniff /var/log/packages/ -t f -p "SBo")
-
-check_dir() {
-	local pkg="$1"
+REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
+PKG_NAME=$(basename $(pwd))
 
 	pkg_dir=$(sniff "$REPO_DIR" -t d "$pkg")
 	if [ -z "$pkg_dir" ]; then
