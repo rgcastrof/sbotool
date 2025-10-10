@@ -118,42 +118,17 @@ pkg_uninstall() {
 	fi
 }
 
-list_installed() {
-	less <<EOF
-List of installed SBo packages:
-
-$INSTALLED
-EOF
-}
-
 show_info() {
-	local pkg="$1"
-	check_dir "$pkg"
-	readme=$(cat "$pkg_dir/README" 2>/dev/null)
-	info=$(cat "$pkg_dir/$pkg.info" 2>/dev/null)
-	slackbuild=$(cat "$pkg_dir/$pkg.SlackBuild" 2>/dev/null)
-
-	less <<EOF
-+--------+
-| README |
-+--------+
-
-$readme
-
-+------+
-| INFO |
-+------+
-
-$info
-
-+------------+
-| SLACKBUILD |
-+------------+
-
-$slackbuild
+	cat <<EOF
+Prgnam:   $PRGNAM-$VERSION
+Path:     $(basename $(dirname $pkg_path))/$PKG_NAME
+Info:	  $(grep "$PKG_NAME" "$pkg_path/slack-desc" | head -n1 | awk -F '[()]' '{print $2}')
+Maint:	  $MAINTAINER <$EMAIL>
+Index:    $(basename $(dirname $pkg_path))
+Deps:	  $(if [ -z "$REQUIRES" ]; then echo "None"; else echo "$REQUIRES"; fi)
+Homepage: $HOMEPAGE
 
 EOF
-
 }
 
 get_queue_file() {
