@@ -84,25 +84,12 @@ pkg_checksum() {
 			error "Failed!"
 		fi
 	done
-
-	chmod +x "$pkg_dir/$pkg.SlackBuild" && "$pkg_dir/$pkg.SlackBuild"
 }
 
-install_pkg() {
-	local pkg="$1"
-
-	if ! build_pkg "$pkg"; then
-		echo "Error: failed to install package"
-		exit 1
-	fi
-
-	build_path=$(sniff -p -t f -d 0 /tmp/ "$pkg" | sort -V | tail -n1)
-	if [ -z "$build_path" ]; then
-		echo "Error: package not found in /tmp"
-		exit 1
-	fi
-	/sbin/upgradepkg --reinstall --install-new "$build_path"
-	echo "Done upgrading/installing package."
+pkg_build() {
+	pkg_fetch
+	pkg_checksum
+	chmod +x "$PKG_NAME.SlackBuild" && "./$PKG_NAME.SlackBuild"
 }
 
 remove_pkg() {
