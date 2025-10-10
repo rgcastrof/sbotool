@@ -131,16 +131,17 @@ Homepage: $HOMEPAGE
 EOF
 }
 
-get_queue_file() {
+pkg_search() {
 	if [ -z "$1" ]; then
-		queue_file="$QUEUE_DIR/current.lst"
-	else
-		queue_file=$(sniff -t f -p "$QUEUE_DIR" "$1")
+		error "You need to pass at least one argument."
 	fi
 
-	if [ ! -f "$queue_file" ]; then
-		echo "Error: no existing queue"
-		exit 1
+	pkg_path=$(find "$REPO_DIR" -maxdepth 2 -type d -name "$PKG_NAME*")
+	if [ -z "$pkg_path" ]; then
+		error "Package not found."
+	else
+		source "$pkg_path/$PKG_NAME.info"
+		show_info
 	fi
 }
 
