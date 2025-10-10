@@ -110,19 +110,11 @@ pkg_install() {
 	fi
 }
 
-list_deps() {
-	local pkg="$1"
-	check_dir "$pkg"
-
-	deps_list=$(grep "REQUIRE" "$pkg_dir/$pkg.info" | cut -d '"' -f2)
-	if [ -z "$deps_list" ]; then
-		echo "No dependencies required for $pkg."
+pkg_uninstall() {
+	if dir_check; then
+		/sbin/removepkg "$PKG_NAME"
 	else
-		echo "List dependencies required for \"$pkg\":"
-		echo
-		for dep in $deps_list; do
-			show_pkg_status INSTALLED "$dep"
-		done
+		error "Error: You are not inside the slackbuilds tree"
 	fi
 }
 
