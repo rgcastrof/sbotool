@@ -27,11 +27,9 @@ REPO_DIR="$LOCAL_DIR/$REPO_NAME"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
 PKG_NAME=$(basename $(pwd))
 
-	pkg_dir=$(sniff "$REPO_DIR" -t d "$pkg")
-	if [ -z "$pkg_dir" ]; then
-		echo "Package $pkg not found."
-		exit 1
-	fi
+error() {
+	echo "$1"
+	exit 1
 }
 
 is_newer_version() {
