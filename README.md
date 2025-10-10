@@ -1,3 +1,3 @@
-# sbo-tool
+# sboports
 
-simple tool for building slackbuild packages on slackware
+An simple shell-based ports-like manager for SlackBuilds.org scripts.
