@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# sboports - An simple shell-based ports-like manager for SlackBuilds.org scripts.
+# sboports - A simple shell-based ports-like manager for SlackBuilds.org scripts.
 # Copyright (C) 2025 Rogério Girão
 #
 # This program is free software: you can redistribute it and/or modify
@@ -45,11 +45,11 @@ pkg_fetch() {
 		source "$PKG_NAME.info"
 		for url in $DOWNLOAD; do
 			if ! wget "$url"; then
-				error "Failed to fetch the distfiles"
+				error "Failed to fetch distfiles."
 			fi
 		done
 	else
-		error "Error: You are not inside the slackbuilds tree"
+		error "Error: You are not inside the SlackBuilds tree."
 	fi
 }
 
@@ -60,14 +60,14 @@ hashes_extract() {
 			distfile=$(basename "$url")
 			src=$(ls | grep -w "$distfile")
 			if [ -z "$src" ]; then
-				echo "Distfile \"$distfile\" missing, downloading now..."
+				echo "Distfile \"$distfile\" missing. Downloading..."
 				wget "$url"
 				src=$(ls | grep -w "$distfile")
 			fi
 			hashes+="$(md5sum "$src" | awk '{print $1}') "
 		done
 	else
-		error "Error: You are not inside the slackbuilds tree"
+		error "Error: You are not inside the SlackBuilds tree."
 	fi
 }
 
@@ -81,7 +81,7 @@ pkg_checksum() {
 		if [ "${hashes_arr[$i]}" == "${md5sum_arr[$i]}" ]; then
 			echo "Pass!"
 		else
-			error "Failed!"
+			error "Checksum mismatch!"
 		fi
 	done
 }
@@ -96,17 +96,17 @@ pkg_install() {
 	if dir_check; then
 		pkg_file=$(find /tmp -maxdepth 1 -type f -name "$PKG_NAME*" | sort -V | tail -n1)
 		if [ ! -z "$pkg_file" ]; then
-			echo "Package $PKG_NAME found in $pkg_file"
+			echo "Package $PKG_NAME found at $pkg_file"
 			read -p "Do you want to install/reinstall it? [y/N] " answer
 			if [ "$answer" ==  "y" ] || [ "$answer" == "Y" ]; then
 				/sbin/upgradepkg --reinstall --install-new "$pkg_file"
-				echo "Done upgrading/installing package."
+				echo "Package installed/reinstalled successfully."
 				exit 0
 			fi
 		fi
 		pkg_build
 	else
-		error "Error: You are not inside the slackbuilds tree"
+		error "Error: You are not inside the SlackBuilds tree."
 	fi
 }
 
@@ -114,7 +114,7 @@ pkg_uninstall() {
 	if dir_check; then
 		/sbin/removepkg "$PKG_NAME"
 	else
-		error "Error: You are not inside the slackbuilds tree"
+		error "Error: You are not inside the SlackBuilds tree."
 	fi
 }
 
@@ -124,7 +124,7 @@ pkg_clean() {
 		for dir in $extracted_source; do
 			rm -rf "$dir"
 		done
-		read -p "Wanna clean the distfiles too? [y/N] " answer
+		read -p "Do you also want to remove the distfiles? [y/N] " answer
 		if [ "$answer" == "y" ] || [ "$answer" == "Y" ]; then
 			source "$PKG_NAME.info"
 			for distfile in $DOWNLOAD; do
@@ -134,7 +134,7 @@ pkg_clean() {
 			done
 		fi
 	else
-		error "Error: You are not inside the slackbuilds tree"
+		error "Error: You are not inside the SlackBuilds tree."
 	fi
 }
 
@@ -153,7 +153,7 @@ EOF
 
 pkg_search() {
 	if [ -z "$1" ]; then
-		error "You need to pass at least one argument."
+		error "You must specify a package name."
 	fi
 
 	pkg_path=$(find "$REPO_DIR" -maxdepth 2 -type d -name "$PKG_NAME*")
@@ -167,14 +167,14 @@ pkg_search() {
 
 repo_extract() {
 	if [ ! -d "$REPO_DIR/.git" ]; then
-		echo "Cloning repository, this may take a while..."
+		echo "Cloning repository. This may take a while..."
 		mkdir -p "$REPO_DIR"
 		if ! git clone "$REPO_URL" "$REPO_DIR"; then
 			error "Failed to clone repository."
 		fi
 		echo "Clone completed."
 	else
-		error "Slackbuilds tree already cloned."
+		error "SlackBuilds tree already cloned."
 	fi
 }
 
