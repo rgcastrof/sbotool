@@ -92,40 +92,21 @@ pkg_build() {
 	chmod +x "$PKG_NAME.SlackBuild" && "./$PKG_NAME.SlackBuild"
 }
 
-remove_pkg() {
-	local pkg="$1"
-	/sbin/removepkg "$pkg"
-}
-
-update_pkgs() {
-	echo "Checking for potential updates..."
-	echo
-	dif_found=0
-
-	for i in ${!INSTALLED[@]}; do
-		pkg=$(basename "${INSTALLED[$i]}")
-		name=$(echo "$pkg" | sed -E 's/-[^-]+-[^-]+-[^-]+$//')
-		local_version=$(echo "$pkg" | sed -E 's/^.*-([^-]+)-[^-]+-[^-]+$/\1/')
-
-		repo_path=$(sniff "$REPO_DIR" -t d "$name" | head -n1)
-		repo_version=$(grep "VERSION=" "$repo_path/$name.info" | cut -d '"' -f2)
-		if [ "$local_version" != "$repo_version" ]; then
-			dif_found=1
-
-			if is_newer_version "$local_version" "$repo_version"; then
-				echo
-				echo "$name:	package is outdated: installed=$local_version | repo=$repo_version"
-				echo
-			else
-				echo
-				echo "$name:	package is newer than the repository: installed=$local_version | repo=$repo_version"
-				echo
+pkg_install() {
+	if dir_check; then
+		pkg_file=$(find /tmp -maxdepth 1 -type f -name "$PKG_NAME*" | sort -V | tail -n1)
+		if [ ! -z "$pkg_file" ]; then
+			echo "Package $PKG_NAME found in $pkg_file"
+			read -p "Do you want to install/reinstall it? [y/N] " answer
+			if [ "$answer" ==  "y" ] || [ "$answer" == "Y" ]; then
+				/sbin/upgradepkg --reinstall --install-new "$pkg_file"
+				echo "Done upgrading/installing package."
+				exit 0
 			fi
 		fi
-	done
-
-	if [ "$dif_found" -eq 0 ]; then
-		echo "All packages are up to date!"
+		pkg_build
+	else
+		error "Error: You are not inside the slackbuilds tree"
 	fi
 }
 
