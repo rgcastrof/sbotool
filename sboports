@@ -20,7 +20,7 @@
 # Rogério Girão rogeriogirao1@proton.me
 #
 NAME=$(basename "$0")
-VERSION=1.1.3
+VERSION=1.1.4
 LOCAL_DIR="/var/lib"
 REPO_NAME="slackbuilds"
 REPO_DIR="$LOCAL_DIR/$REPO_NAME"
@@ -197,7 +197,7 @@ pkg_search() {
 		error "You must specify a package name."
 	fi
 
-	if [ "$(pwd)" == "$REPO_DIR" ]; then
+	if [[ "$PWD" =~ ^"$REPO_DIR" ]]; then
 		pkg_path=$(find "$REPO_DIR" -type d -name "$1")
 		if [ -z "$pkg_path" ]; then
 			error "Package not found."
@@ -205,6 +205,8 @@ pkg_search() {
 			source "$pkg_path/$1.info"
 			show_info "$1"
 		fi
+	else
+		error "Error: You are not inside the SlackBuilds tree."
 	fi
 }
 
