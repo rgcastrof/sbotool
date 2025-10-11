@@ -20,7 +20,7 @@
 # Rogério Girão rogeriogirao1@proton.me
 #
 NAME=$(basename "$0")
-VERSION=1.1.1
+VERSION=1.1.2
 LOCAL_DIR="/var/lib"
 REPO_NAME="slackbuilds"
 REPO_DIR="$LOCAL_DIR/$REPO_NAME"
@@ -43,11 +43,31 @@ dir_check() {
 pkg_fetch() {
 	if dir_check; then
 		source "$PKG_NAME.info"
-		for url in $DOWNLOAD; do
-			if ! wget "$url"; then
-				error "Failed to fetch distfiles."
+
+		validate_url() {
+			for url in "$@"; do
+				case "$url" in
+					http://*|https://*|ftp://*)
+						if wget -c "$url"; then
+							return 0
+						else
+							echo "Failed to download: $url"
+						fi
+						;;
+					*)
+						echo "Ignoring invalid entry: $url"
+						;;
+				esac
+			done
+			return 1
+		}
+
+		if ! validate_url $DOWNLOAD; then
+			echo "Trying fallback with DOWNLOAD_x86-64..."
+			if ! validate_url $DOWNLOAD_x86_64; then
+				error "Failed to download distfiles."
 			fi
-		done
+		fi
 	else
 		error "Error: You are not inside the SlackBuilds tree."
 	fi
