@@ -20,7 +20,7 @@
 # Rogério Girão rogeriogirao1@proton.me
 #
 NAME=$(basename "$0")
-VERSION=1.0.0
+VERSION=1.0.1
 LOCAL_DIR="/var/lib"
 REPO_NAME="slackbuilds"
 REPO_DIR="$LOCAL_DIR/$REPO_NAME"
@@ -141,8 +141,8 @@ pkg_clean() {
 show_info() {
 	cat <<EOF
 Prgnam:   $PRGNAM-$VERSION
-Path:     $(basename $(dirname $pkg_path))/$PKG_NAME
-Info:	  $(grep "$PKG_NAME" "$pkg_path/slack-desc" | head -n1 | awk -F '[()]' '{print $2}')
+Path:     $(basename "$(dirname "$pkg_path")")/$1
+Info:	  $(grep "$1" "$pkg_path/slack-desc" | head -n1 | awk -F '[()]' '{print $2}')
 Maint:	  $MAINTAINER <$EMAIL>
 Index:    $(basename $(dirname $pkg_path))
 Deps:	  $(if [ -z "$REQUIRES" ]; then echo "None"; else echo "$REQUIRES"; fi)
@@ -156,12 +156,14 @@ pkg_search() {
 		error "You must specify a package name."
 	fi
 
-	pkg_path=$(find "$REPO_DIR" -maxdepth 2 -type d -name "$PKG_NAME*")
-	if [ -z "$pkg_path" ]; then
-		error "Package not found."
-	else
-		source "$pkg_path/$PKG_NAME.info"
-		show_info
+	if [ "$(pwd)" == "$REPO_DIR" ]; then
+		pkg_path=$(find "$REPO_DIR" -type d -name "$1")
+		if [ -z "$pkg_path" ]; then
+			error "Package not found."
+		else
+			source "$pkg_path/$1.info"
+			show_info "$1"
+		fi
 	fi
 }
 
