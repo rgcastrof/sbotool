@@ -20,7 +20,7 @@
 # Rogério Girão rogeriogirao1@proton.me
 #
 NAME=$(basename "$0")
-VERSION=1.1.4
+VERSION=1.1.5
 LOCAL_DIR="/var/lib"
 REPO_NAME="slackbuilds"
 REPO_DIR="$LOCAL_DIR/$REPO_NAME"
@@ -214,13 +214,13 @@ pkg_diff() {
 	installed=$(sniff /var/log/packages -t f -p SBo)
 
 	echo "Searching for differences between installed packages and SlackBuilds tree versions..."
-	echo
 	for pkg in $installed; do
 		pkg_name="$(basename "$pkg" | sed -E 's/-[0-9][^-]*-[^-]+-[^-]+_SBo$//')"
 		pkg_version=$(basename "$pkg" | sed -E 's/.*-([0-9][^-]*)-[^-]+-[^-]+_SBo$/\1/')
 		pkg_dir=$(find "$REPO_DIR" -type d -name "$pkg_name")
 		source "$pkg_dir/$pkg_name.info"
 		if [ "$pkg_version" != "$VERSION" ]; then
+			echo
 			echo "Package: $pkg_name"
 			if [ "$(printf '%s\n%s\n' "$pkg_version" "$VERSION" | sort -V | head -n1)" = "$pkg_version" ]; then
 					echo "Installed version is outdated."
@@ -228,6 +228,7 @@ pkg_diff() {
 					echo "Version available in the SlackBuilds tree: $VERSION"
 					echo
 			else
+					echo
 					echo "Installed version is newer than the SlackBuilds tree version."
 					echo "Installed version: $pkg_version"
 					echo "Version available in the SlackBuilds tree: $VERSION"
@@ -235,6 +236,7 @@ pkg_diff() {
 			fi
 		fi
 	done
+	echo "Done."
 }
 
 repo_extract() {
