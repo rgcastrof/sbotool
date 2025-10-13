@@ -20,11 +20,12 @@
 # Rogério Girão rogeriogirao1@proton.me
 #
 NAME=$(basename "$0")
-VERSION=1.1.5
+VERSION=1.1.6
 LOCAL_DIR="/var/lib"
 REPO_NAME="slackbuilds"
 REPO_DIR="$LOCAL_DIR/$REPO_NAME"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
+SRCS_DIR="/tmp/SBo"
 PKG_NAME=$(basename $(pwd))
 
 error() {
@@ -161,8 +162,8 @@ pkg_uninstall() {
 
 pkg_clean() {
 	if dir_check; then
-		extracted_source=$(find "/tmp/SBo" -maxdepth 2 -type d -name "$PKG_NAME*")
-		for dir in $extracted_source; do
+		src=$(sniff "$SRCS_DIR" -t d -d 0 -p "$PKG_NAME")
+		for dir in $src; do
 			rm -rf "$dir"
 		done
 		read -p "Do you also want to remove the distfiles? [y/N] " answer
