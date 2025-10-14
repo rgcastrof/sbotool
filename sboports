@@ -20,9 +20,9 @@
 # Rogério Girão rogeriogirao1@proton.me
 #
 NAME=$(basename "$0")
-VERSION=1.1.6
-LOCAL_DIR="/var/lib"
-REPO_NAME="slackbuilds"
+VERSION=1.1.7
+LOCAL_DIR="/usr"
+REPO_NAME="ports"
 REPO_DIR="$LOCAL_DIR/$REPO_NAME"
 REPO_URL="git://git.slackbuilds.org/slackbuilds.git"
 SRCS_DIR="/tmp/SBo"
@@ -304,7 +304,7 @@ Usage: $NAME <command>
 List of $NAME commands:
 
 Synchronize and check for updates:
-	fetch extract            Clone SlackBuilds.org repository into /var/lib.
+	fetch extract            Clone SlackBuilds.org repository into /usr/ports.
 	fetch update             Update the local SlackBuilds repository tree.
 
 Work with packages:
